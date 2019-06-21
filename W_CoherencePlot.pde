@@ -60,7 +60,6 @@ class W_CoherencePlot extends Widget {
   int maxNPoints = xLimOptions[xLimOptions.length-1] * (int)getSampleRateSafe();
   
   float[][] timePointsTemp = new float[nchan][maxNPoints]; 
-float coherencePoints[][][];
   float[] coherencePointsTemp = new float[maxNPoints]; 
   float timeBetweenPoints = (float)xLim / (float)nPoints;
   float[] time = new float[nPoints];
@@ -75,8 +74,6 @@ float coherencePoints[][][];
 
   W_CoherencePlot(PApplet _parent){
     super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
-
-    coherencePoints = new float[nchan][nchan][dataBuffX.length];
 
     xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
     yF = float(y);
