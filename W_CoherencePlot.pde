@@ -126,7 +126,7 @@ class W_CoherencePlot extends Widget {
 //    addDropdown("plotDom", "Plot Type", Arrays.asList("Freq", "Time"), 1);
     addDropdown("plotDom", "Plot Type", Arrays.asList("Time"), 0);
 //    addDropdown("pbFilter", "PB Filter", Arrays.asList("Theta", "Alpha 1", "Alpha 2", "Alpha", "Beta", "Gamma"), 0);
-    addDropdown("pbFilter", "PB Filter", Arrays.asList("Alpha"), 0);
+    addDropdown("pbFilter", "PB Filter", Arrays.asList("None", "Alpha"), 0);
     addDropdown("timeVertScale", "Vert Scale", Arrays.asList("50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"), 0);    
 //    addDropdown("CMaxTime", "Max Time", Arrays.asList("1 s", "3 s", "5 s", "7 s"), 2);
     addDropdown("CMaxTime", "Max Time", Arrays.asList("7 s"), 0);
@@ -222,7 +222,6 @@ class W_CoherencePlot extends Widget {
 
     //setup points of coherence point arrays
    /* coherencePointsToFreqPlot = new GPointsArray(coherenceIndexLim);
-
     //fill coherence point arrays
     for (int i = 0; i < coherenceIndexLim; i++) { 
       GPoint coherenceAtBin = new GPoint((1.0*fs/nfft)*i, 0);
@@ -580,13 +579,16 @@ class Coherence {
 
     int n = dataA.length;
 
+    int cFilter = w_coherencePlot.cFilter;
+
     dataACR = lrmv(dataA);
     dataBCR = lrmv(dataB);
 
-    getCoef();
-    dataACR = applyPassband(b, a, dataACR);
-    dataBCR = applyPassband(b, a, dataBCR);
-
+    if(cFilter == 1){
+      getCoef();
+      dataACR = applyPassband(b, a, dataACR);
+      dataBCR = applyPassband(b, a, dataBCR);
+    }
 
     for (int i = 0; i < n; i++) {
       weight[i] = 0.5*(1 - cos(2.0*PI*i/(n - 1)));
@@ -903,7 +905,8 @@ class Coherence {
   }*/
 
   private void getCoef() {
-      switch(fs) {
+ 
+    switch(fs) {
 
         case(125):
         b = new double[] {0.008826, 0.000000, -0.017652, 0.000000, 0.008826};
