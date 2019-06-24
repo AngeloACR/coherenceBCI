@@ -221,35 +221,28 @@ class W_CoherencePlot extends Widget {
     coherencePlot.setPoints(coherencePointsToPlot);
 
     //setup points of coherence point arrays
-    coherencePointsToFreqPlot = new GPointsArray(coherenceIndexLim);
+   /* coherencePointsToFreqPlot = new GPointsArray(coherenceIndexLim);
 
     //fill coherence point arrays
     for (int i = 0; i < coherenceIndexLim; i++) { 
       GPoint coherenceAtBin = new GPoint((1.0*fs/nfft)*i, 0);
       coherencePointsToFreqPlot.set(i, coherenceAtBin);
-    }
+    }*/
 
  /*   //setup GPlot for Coherence
     coherenceFreqPlot =  new GPlot(_parent); //based on container dimensions
-
     coherenceFreqPlot.setPos(ts_x, coherenceBarY);
     coherenceFreqPlot.setDim(int(ts_w), 2*channelBarHeight);
-
     coherenceFreqPlot.getXAxis().setAxisLabelText("Frequency (Hz)");
     coherenceFreqPlot.getYAxis().setAxisLabelText("Coherence");
     coherenceFreqPlot.setMar(60, 50, 0f, 0f); //{ bot=60, left=70, top=40, right=30 } by default
-
     coherenceFreqPlot.setYLim(0, coherenceYLim);
     coherenceFreqPlot.getYAxis().setNTicks(5);  //sets the number of axis divisions...
-
     coherenceFreqPlot.setLineWidth(3);
-
     coherenceFreqPlot.setXLim(0, xFreqLim/2);
     coherenceFreqPlot.getYAxis().setDrawTickLabels(true);
-
     coherenceFreqPlot.setPointSize(2);
     coherenceFreqPlot.setPointColor(0);
-
     //map fft point arrays to fft plots
     coherenceFreqPlot.setPoints(coherencePointsToFreqPlot);*/
   }
@@ -264,9 +257,9 @@ class W_CoherencePlot extends Widget {
         appendAndShift(coherencePoints[i], cTemp);
       }*/
 
-        coherence[i].calcCoherence(dataBuffY_uV[0], dataBuffY_uV[1]);
-        float cTemp = coherence[i].cVal();
-        appendAndShift(coherencePoints[i], cTemp);
+        coherence[0].calcCoherence(dataBuffY_uV[0], dataBuffY_uV[1]);
+        float cTemp = coherence[0].cVal();
+        appendAndShift(coherencePoints[0], cTemp);
 
       updatePlotPoints();
     }
@@ -303,7 +296,7 @@ class W_CoherencePlot extends Widget {
     }
 
 
-    cFreqTemp = coherence[channels].getCoherence();
+//    cFreqTemp = coherence[channels].getCoherence();
 
 
     currentTime = System.currentTimeMillis();
@@ -380,7 +373,6 @@ class W_CoherencePlot extends Widget {
       //coherencePlot.drawRightAxis();
       //coherencePlot.drawTitle();
       coherenceFreqPlot.drawGridLines(2);
-
       coherenceFreqPlot.setLineColor(lineColor[colorSelected]);
       coherenceFreqPlot.setPoints(coherencePointsToFreqPlot);
       coherenceFreqPlot.drawLines();
@@ -606,10 +598,10 @@ class Coherence {
       dataBCR[i] *= weight[i];
     }
 
-    chanA = createFFT(chanA, dataACR, nfft, fs)
-    chanB = createFFT(chanB, dataBCR, nfft, fs)
+    chanA = createFFT(chanA, dataACR, nfft, fs);
+    chanB = createFFT(chanB, dataBCR, nfft, fs);
 
-    coherence = getCoherenceMean(chanA, chanB, 0, 255);
+    coherence = getCoherence(chanA, chanB, 0, 255);
   }
 
   private float getCoherence(FFT A, FFT B, int indexRangeStart, int indexRangeEnd) {
@@ -660,7 +652,7 @@ class Coherence {
     return coherence;
   }
 
-  private FFT createFFT(FFT fftBuff, float dataBuffY_uV, int nfft, float fs_Hz) {
+  private FFT createFFT(FFT fftBuff, float[] dataBuffY_uV, int nfft, float fs_Hz) {
 
     float[] fooData;
     //make the FFT objects...Following "SoundSpectrum" example that came with the Minim library
@@ -704,41 +696,32 @@ class Coherence {
 /*  private void getCoef() {
     int cFilter = w_coherencePlot.cFilter;
     switch(cFilter) {
-
       case(0): 
-
       switch(fs) {
-
         case(125):
         b = new double[] {0.008826, 0.000000, -0.017652, 0.000000, 0.008826};
         a = new double[] {1.00000, -3.56745, 4.91298, -3.09242, 0.75252};
         break;
-
         case(200):
         b = new double[] {0.0036217, 0.0000000, -0.0072434, 0.0000000, 0.0036217};
         a = new double[] {1.00000, -3.76241, 5.36804, -3.44191, 0.83718};
         break;
-
         case(250):
         b = new double[] {0.0023572, 0.0000000, -0.0047144, 0.0000000, 0.0023572};
         a = new double[] {1.00000, -3.81908, 5.50870, -3.55671, 0.86747};
         break;
-
         case(500):
         b = new double[] {0.0006099, 0.0000000, -0.0012197, 0.0000000, 0.0006099};
         a = new double[] {1.00000, -3.91902, 5.76979, -3.78213, 0.93138};
         break;
-
         case(1000):
         b = new double[] {1.5515e-04, 0.0000e+00, -3.1030e-04, 0.0000e+00, 1.5515e-04};
         a = new double[] {1.00000, -3.96196, 5.88904, -3.89216, 0.96508};
         break;
-
         case(1600):
         b = new double[] {6.1006e-05, 0.0000e+00, -1.2201e-04, 0.0000e+00, 6.1006e-05};
         a = new double[] {1.00000, -3.97681, 5.93165, -3.93288, 0.97803};
         break;
-
       default:
         println("***ERROR*** FS should be 125, 200, 250, 500, 1000, 1600Hz");
         b = new double[] {1.0};
@@ -746,41 +729,32 @@ class Coherence {
         break;
       }
       break;
-
       case(1): 
-
       switch(fs) {
-
         case(125):
         b = new double[] {0.0023572, 0.0000000, -0.0047144, 0.0000000, 0.0023572};
         a = new double[] {1.00000, -3.47433, 4.87935, -3.23564, 0.86747};
         break;
-
         case(200):
         b = new double[] {0.0009447, 0.0000000, -0.0018894, 0.0000000, 0.0009447};
         a = new double[] {1.00000, -3.75775, 5.44304, -3.59438, 0.91498};
         break;
-
         case(250):
         b = new double[] {0.0006099, 0.0000000, -0.0012197, 0.0000000, 0.0006099};
         a = new double[] {1.00000, -3.83007, 5.59742, -3.69629, 0.93138};
         break;
-
         case(500):
         b = new double[] {1.5515e-04, 0.0000e+00, -3.1030e-04, 0.0000e+00, 1.5515e-04};
         a = new double[] {1.00000, -3.93944, 5.84457, -3.87005, 0.96508};
         break;
-
         case(1000):
         b = new double[] {3.9130e-05, 0.0000e+00, -7.8260e-05, 0.0000e+00, 3.9130e-05};
         a = new double[] {1.00000, -3.97594, 5.93433, -3.94077, 0.98239};
         break;
-
         case(1600):
         b = new double[] {1.5336e-05, 0.0000e+00, -3.0672e-05, 0.0000e+00, 1.5336e-05};
         a = new double[] {1.00000, -3.98643, 5.96183, -3.96435, 0.98895};
         break;
-
       default:
         println("***ERROR*** FS should be 125, 200, 250, 500, 1000, 1600Hz");
         b = new double[] {1.0};
@@ -788,41 +762,32 @@ class Coherence {
         break;
       }
       break;
-
       case(2): 
-
       switch(fs) {
-
         case(125):
         b = new double[] {0.0023572, 0.0000000, -0.0047144, 0.0000000, 0.0023572};
         a = new double[] {1.00000, -3.28733, 4.56286, -3.06148, 0.86747};
         break;
-
         case(200):
         b = new double[] {0.0009447, 0.0000000, -0.0018894, 0.0000000, 0.0009447};
         a = new double[] {1.00000, -3.68179, 5.30169, -3.52171, 0.91498};
         break;
-
         case(250):
         b = new double[] {0.0006099, 0.0000000, -0.0012197, 0.0000000, 0.0006099};
         a = new double[] {1.00000, -3.78095, 5.50392, -3.64888, 0.93138};
         break;
-
         case(500):
         b = new double[] {1.5515e-04, 0.0000e+00, -3.1030e-04, 0.0000e+00, 1.5515e-04};
         a = new double[] {1.00000, -3.92696, 5.82000, -3.85778, 0.96508};
         break;
-
         case(1000):
         b = new double[] {3.9130e-05, 0.0000e+00, -7.8260e-05, 0.0000e+00, 3.9130e-05};
         a = new double[] {1.00000, -3.97280, 5.92809, -3.93765, 0.98239};
         break;
-
         case(1600):
         b = new double[] {1.5336e-05, 0.0000e+00, -3.0672e-05, 0.0000e+00, 0.53e-05};
         a = new double[] {1.00000, -3.98520, 5.95938, -3.96313, 0.98895};
         break;
-
       default:
         println("***ERROR*** FS should be 125, 200, 250, 500, 1000, 1600Hz");
         b = new double[] {1.0};
@@ -830,41 +795,32 @@ class Coherence {
         break;
       }
       break;
-
       case(3): 
-
       switch(fs) {
-
         case(125):
         b = new double[] {0.008826, 0.000000, -0.017652, 0.000000, 0.008826};
         a = new double[] {1.00000, -3.27395, 4.40877, -2.83800, 0.75252};
         break;
-
         case(200):
         b = new double[] {0.0036217, 0.0000000, -0.0072434, 0.0000000, 0.0036217};
         a = new double[] {1.00000, -3.64279, 5.14619, -3.33248, 0.83718};
         break;
-
         case(250):
         b = new double[] {0.0023572, 0.0000000, -0.0047144, 0.0000000, 0.0023572};
         a = new double[] {1.00000, -3.74156, 5.36199, -3.48451, 0.86747};
         break;
-
         case(500):
         b = new double[] {0.0006099, 0.0000000, -0.0012197, 0.0000000, 0.0006099};
         a = new double[] {1.00000, -3.89919, 5.73103, -3.76300, 0.93138};
         break;
-
         case(1000):
         b = new double[] {1.5515e-04, 0.0000e+00, -3.1030e-04, 0.0000e+00, 1.5515e-04};
         a = new double[] {1.00000, -3.95695, 5.87913, -3.88724, 0.96508};
         break;
-
         case(1600):
         b = new double[] {6.1006e-05, 0.0000e+00, -1.2201e-04, 0.0000e+00, 6.1006e-05};
         a = new double[] {1.00000, -3.97484, 5.92775, -3.93094, 0.97803};
         break;
-
       default:
         println("***ERROR*** FS should be 125, 200, 250, 500, 1000, 1600Hz");
         b = new double[] {1.0};
@@ -872,41 +828,32 @@ class Coherence {
         break;
       }
       break;
-
       case(4): 
-
       switch(fs) {
-
         case(125):
         b = new double[] {0.06297, 0.00000, -0.12595, 0.00000, 0.06297};
         a = new double[] {1.00000, -1.92080, 2.12789, -1.22813, 0.42743};
         break;
-
         case(200):
         b = new double[] {0.027860, 0.000000, -0.055720, 0.000000, 0.027860};
         a = new double[] {1.00000, -2.92634, 3.64658, -2.23071, 0.58692};
         break;
-
         case(250):
         b = new double[] {0.018650, 0.000000, -0.037301, 0.000000, 0.018650};
         a = new double[] {1.00000, -3.21444, 4.18571, -2.59071, 0.65284};
         break;
-
         case(500):
         b = new double[] {0.005129, 0.000000, -0.010259, 0.000000, 0.005129};
         a = new double[] {1.00000, -3.69047, 5.20109, -3.31621, 0.80795};
         break;
-
         case(1000):
         b = new double[] {0.0013487, 0.0000000, -0.0026974, 0.0000000, 0.0013487};
         a = new double[] {1.00000, -3.86850, 5.63731, -3.66752, 0.89886};
         break;
-
         case(1600):
         b = new double[] {0.0005372, 0.0000000, -0.0010743, 0.0000000, 0.0005372};
         a = new double[] {1.00000, -3.92353, 5.78293, -3.79491, 0.93553};
         break;
-
       default:
         println("***ERROR*** FS should be 125, 200, 250, 500, 1000, 1600Hz");
         b = new double[] {1.0};
@@ -914,41 +861,32 @@ class Coherence {
         break;
       }
       break;
-
       case(5): 
-
       switch(fs) {
-
         case(125):
         b = new double[] {0.09131, 0.00000, -0.18263, 0.00000, 0.09131};
         a = new double[] {1.00000, 0.20141, 0.99303, 0.11330, 0.34767};
         break;
-
         case(200):
         b = new double[] {0.041254, 0.000000, -0.082507, 0.000000, 0.041254};
         a = new double[] {1.00000, -1.79955, 2.17562, -1.27723, 0.51398};
         break;
-
         case(250):
         b = new double[] {0.027860, 0.000000, -0.055720, 0.000000, 0.027860};
         a = new double[] {1.00000, -2.42203, 2.96276, -1.84629, 0.58692};
         break;
-
         case(500):
         b = new double[] {0.007820, 0.000000, -0.015640, 0.000000, 0.007820};
         a = new double[] {1.00000, -3.44284, 4.70965, -3.01143, 0.76601};
         break;
-
         case(1000):
         b = new double[] {0.0020806, 0.0000000, -0.0041611, 0.0000000, 0.0020806};
         a = new double[] {1.00000, -3.79076, 5.46309, -3.54610, 0.87521};
         break;
-
         case(1600):
         b = new double[] {0.0008325, 0.0000000, -0.0016651, 0.0000000, 0.0008325};
         a = new double[] {1.00000, -3.88657, 5.69467, -3.72794, 0.92007};
         break;
-
       default:
         println("***ERROR*** FS should be 125, 200, 250, 500, 1000, 1600Hz");
         b = new double[] {1.0};
@@ -956,7 +894,6 @@ class Coherence {
         break;
       }
       break;
-
     default:
       println("***ERROR*** FS should be 125, 200, 250, 500, 1000, 1600Hz");
       b = new double[] {1.0};
