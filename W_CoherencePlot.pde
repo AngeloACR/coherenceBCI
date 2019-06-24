@@ -58,7 +58,7 @@ class W_CoherencePlot extends Widget {
   int channelBarHeight;
 
   //int[] xLimOptions = {1, 3, 5, 7};
-  int[] xLimOptions = {7};
+  int[] xLimOptions = {7, 10, 20};
   int[] yLimOptions = {50, 100, 200, 400, 1000, 10000};
 
  // int xLim = xLimOptions[2];  //maximum value of x axis ... in this case 5 s, 10 s, 15 s, 20 s
@@ -129,7 +129,7 @@ class W_CoherencePlot extends Widget {
     addDropdown("pbFilter", "PB Filter", Arrays.asList("None", "Alpha"), 0);
     addDropdown("timeVertScale", "Vert Scale", Arrays.asList("50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"), 0);    
 //    addDropdown("CMaxTime", "Max Time", Arrays.asList("1 s", "3 s", "5 s", "7 s"), 2);
-    addDropdown("CMaxTime", "Max Time", Arrays.asList("7 s"), 0);
+    addDropdown("CMaxTime", "Max Time", Arrays.asList("7 s", "10 s", "20 s"), 0);
 //    addDropdown("channelsSelect", "Channels", Arrays.asList(channelSelection), 0);
     addDropdown("channelsSelect", "Channels", Arrays.asList(channelSelection[0]), 0);
 
