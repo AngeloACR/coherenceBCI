@@ -323,7 +323,7 @@ class W_CoherencePlot extends Widget {
         float auxX = timePointsToPlot[0].getX(c-1-i);
         float auxY = timePointsToPlot[0].getY(c-1-i);
         GPoint temp = new GPoint(time[i], auxY);
-        timeWindowA.set(i, auxY);
+        timeWindowA.set(i, temp);
       }
     }
     if(timeIndexB == nPoints){
@@ -336,7 +336,8 @@ class W_CoherencePlot extends Widget {
       for(int i = 0; i < timeIndexB ; i++){
         float auxX = timePointsToPlot[1].getX(c-1-i);
         float auxY = timePointsToPlot[1].getY(c-1-i);
-        timeWindowB.set(i, auxY);
+        GPoint temp = new GPoint(time[i], auxY);
+        timeWindowB.set(i, temp);
       }
     }
     if(coherenceIndex == nPoints){
@@ -349,7 +350,8 @@ class W_CoherencePlot extends Widget {
       for(int i = 0; i < coherenceIndex ; i++){
         float auxX = coherencePointsToPlot.getX(c-1-i);
         float auxY = coherencePointsToPlot.getY(c-1-i);
-        coherenceWindow.set(i, auxY);
+        GPoint temp = new GPoint(time[i], auxY);
+        coherenceWindow.set(i, temp);
       }
     }
 
