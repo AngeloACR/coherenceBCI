@@ -159,7 +159,8 @@ class W_CoherencePlot extends Widget {
     for (int j = 0; j < nPoints; j++) {
       float filt_uV_value = 0.0; //0.0 for all points to start
       GPoint tempPoint = new GPoint(time[j], filt_uV_value);
-      timeWindow.set(j, tempPoint);
+      timeWindowA.set(j, tempPoint);
+      timeWindowB.set(j, tempPoint);
       timePointsToPlot[0].set(j, tempPoint);
       timePointsToPlot[1].set(j, tempPoint);
     }
@@ -315,11 +316,13 @@ class W_CoherencePlot extends Widget {
     }
 
     if(timeIndexA == 0){
-        timeWindowA.set(0, 0);      
+      GPoint temp = new GPoint(time[0], 0);
+        timeWindowA.set(0, temp);      
     } else{
       for(int i = 0; i < timeIndexA ; i++){
         float auxX = timePointsToPlot[0].getX(c-1-i);
         float auxY = timePointsToPlot[0].getY(c-1-i);
+        GPoint temp = new GPoint(time[i], auxY);
         timeWindowA.set(i, auxY);
       }
     }
