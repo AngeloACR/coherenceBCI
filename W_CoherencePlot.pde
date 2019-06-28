@@ -28,6 +28,11 @@ class W_CoherencePlot extends Widget {
   GPlot coherencePlot; //create an fft plot for each active channel
 //  GPlot coherenceFreqPlot; //create an fft plot for each active channel
 //  GPointsArray coherencePointsToFreqPlot;  //create an array of points for each channel of data (4, 8, or 16)
+
+  GPointsArray timeWindowA;  //create an array of points for each channel of data (4, 8, or 16)
+  GPointsArray timeWindowB;  //create an array of points for each channel of data (4, 8, or 16)
+  GPointsArray coherenceWindow;  //create an array of points for each channel of data (4, 8, or 16)
+
   GPointsArray coherencePointsToPlot;  //create an array of points for each channel of data (4, 8, or 16)
   GPointsArray[] timePointsToPlot = new GPointsArray[2];
 
@@ -82,6 +87,9 @@ class W_CoherencePlot extends Widget {
   float[] time = new float[nPoints];
 
   int channels = 0;
+  int timeIndexA = 0;
+  int timeIndexB = 0;
+  int coherenceIndex = 0;
 
   String plotDom = "time";
 
@@ -142,6 +150,8 @@ class W_CoherencePlot extends Widget {
 
   void initializePlots(PApplet _parent) {
 
+    timeWindowA = new GPointsArray(nPoints);
+    timeWindowB = new GPointsArray(nPoints);
 
     timePointsToPlot[0] = new GPointsArray(nPoints);
     timePointsToPlot[1] = new GPointsArray(nPoints);
@@ -149,6 +159,7 @@ class W_CoherencePlot extends Widget {
     for (int j = 0; j < nPoints; j++) {
       float filt_uV_value = 0.0; //0.0 for all points to start
       GPoint tempPoint = new GPoint(time[j], filt_uV_value);
+      timeWindow.set(j, tempPoint);
       timePointsToPlot[0].set(j, tempPoint);
       timePointsToPlot[1].set(j, tempPoint);
     }
@@ -176,7 +187,8 @@ class W_CoherencePlot extends Widget {
       timeSeriesPlot[i].setYLim(-50, 50);
       timeSeriesPlot[i].getYAxis().setNTicks(0);
 
-      timeSeriesPlot[i].setXLim(-xLim, 0);
+//      timeSeriesPlot[i].setXLim(-xLim, 0);
+      timeSeriesPlot[i].setXLim(0, xLim);
       timeSeriesPlot[i].getXAxis().setNTicks(xLim);      
 
       timeSeriesPlot[i].setPointSize(2);
@@ -184,13 +196,14 @@ class W_CoherencePlot extends Widget {
       timeSeriesPlot[i].setPoints(timePointsToPlot[i]);
     }
 
-
+    coherenceWindow = new GPointsArray(nPoints);
     //setup points of coherence point arrays
     coherencePointsToPlot = new GPointsArray(nPoints);
 
     //fill coherence point arrays
     for (int i = 0; i < nPoints; i++) { 
       GPoint temp = new GPoint(10*time[i], 0);
+      coherenceWindow.set(i, temp);
       coherencePointsToPlot.set(i, temp);
     }
 
@@ -210,7 +223,8 @@ class W_CoherencePlot extends Widget {
 
     coherencePlot.setLineWidth(3);
 
-    coherencePlot.setXLim(-xLim, 0);
+//    coherencePlot.setXLim(-xLim, 0);
+    coherencePlot.setXLim(0, xLim);
     coherencePlot.getXAxis().setNTicks(xLim);  
     coherencePlot.getYAxis().setDrawTickLabels(true);
 
@@ -269,6 +283,7 @@ class W_CoherencePlot extends Widget {
     int channelA = 2*channels;
     int channelB = 2*channels+1;
 
+    
 
     int a = dataBuffY_filtY_uV[channelA].length;
     int b = dataBuffY_filtY_uV[channelB].length;
@@ -278,6 +293,7 @@ class W_CoherencePlot extends Widget {
     float bTemp;
     float cTemp;
     float[] cFreqTemp = new float[nfft/2];
+
 
     for (int j = 0; j < nPoints; j++) {
 
@@ -294,13 +310,58 @@ class W_CoherencePlot extends Widget {
       coherencePointsToPlot.set(j, chTemp);
     }
 
+    if(timeIndexA == nPoints){
+      timeIndexA = 0;
+    }
+
+    if(timeIndexA == 0){
+        timeWindowA.set(0, 0);      
+    } else{
+      for(int i = 0; i < timeIndexA ; i++){
+        float auxX = timePointsToPlot[0].getX(c-1-i);
+        float auxY = timePointsToPlot[0].getY(c-1-i);
+        timeWindowA.set(i, auxY);
+      }
+    }
+    if(timeIndexB == nPoints){
+      timeIndexB = 0;
+    }
+
+    if(timeIndexB == 0){
+        timeWindowB.set(0, 0);      
+    } else{
+      for(int i = 0; i < timeIndexB ; i++){
+        float auxX = timePointsToPlot[1].getX(c-1-i);
+        float auxY = timePointsToPlot[1].getY(c-1-i);
+        timeWindowB.set(i, auxY);
+      }
+    }
+    if(coherenceIndex == nPoints){
+      coherenceIndex = 0;
+    }
+
+    if(coherenceIndex == 0){
+        coherenceWindowA.set(0, 0);      
+    } else{
+      for(int i = 0; i < coherenceIndex ; i++){
+        float auxX = coherencePointsToPlot.getX(c-1-i);
+        float auxY = coherencePointsToPlot.getY(c-1-i);
+        coherenceWindow.set(i, auxY);
+      }
+    }
+
+    timeIndexA++;
+    timeIndexB++;
+    coherenceIndex++;
+
+
 
 //    cFreqTemp = coherence[channels].getCoherence();
 
 
-    currentTime = System.currentTimeMillis();
+   /* currentTime = System.currentTimeMillis();
 
-   /* if ( 1000 < currentTime - prevTime) {
+    if ( 1000 < currentTime - prevTime) {
       for (int j = 0; j < coherenceIndexLim; j++) {
         if ( cFreqTemp.length <= j ) {
           GPoint coherenceAtBin = new GPoint((1.0*fs/nfft)*j, 0);
@@ -314,11 +375,15 @@ class W_CoherencePlot extends Widget {
     }*/
 
 
-    for (int i = 0; i < timeSeriesPlot.length; i++) {
+/*    for (int i = 0; i < timeSeriesPlot.length; i++) {
       timeSeriesPlot[i].setPoints(timePointsToPlot[i]);
     }
+    coherencePlot.setPoints(coherencePointsToPlot);*/
 
-    coherencePlot.setPoints(coherencePointsToPlot);
+    timeSeriesPlot[0].setPoints(timeWindowA);
+    timeSeriesPlot[1].setPoints(timeWindowB);
+    coherencePlot.setPoints(coherenceWindow);
+
   }
 
   void draw() {
