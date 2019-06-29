@@ -142,7 +142,8 @@ class W_CoherencePlot extends Widget {
     addDropdown("channelsSelect", "Channels", Arrays.asList(channelSelection[0]), 0);
 
     for (int i = 0; i < nPoints; i++) { 
-      time[i] = -(float)xLim + (float)i*timeBetweenPoints;
+//      time[i] = -(float)xLim + (float)i*timeBetweenPoints;
+        time[i] = (float)i*timeBetweenPoints;
     }
 
     initializePlots(_parent);
@@ -194,8 +195,10 @@ class W_CoherencePlot extends Widget {
 
       timeSeriesPlot[i].setPointSize(2);
       timeSeriesPlot[i].setPointColor(0);
-      timeSeriesPlot[i].setPoints(timePointsToPlot[i]);
+//      timeSeriesPlot[i].setPoints(timePointsToPlot[i]);
     }
+      timeSeriesPlot[0].setPoints(timeWindowA);
+      timeSeriesPlot[1].setPoints(timeWindowB);
 
     coherenceWindow = new GPointsArray(nPoints);
     //setup points of coherence point arrays
@@ -203,7 +206,7 @@ class W_CoherencePlot extends Widget {
 
     //fill coherence point arrays
     for (int i = 0; i < nPoints; i++) { 
-      GPoint temp = new GPoint(10*time[i], 0);
+      GPoint temp = new GPoint(time[i], 0);
       coherenceWindow.set(i, temp);
       coherencePointsToPlot.set(i, temp);
     }
@@ -233,7 +236,8 @@ class W_CoherencePlot extends Widget {
     coherencePlot.setPointColor(0);
 
     //map fft point arrays to fft plots
-    coherencePlot.setPoints(coherencePointsToPlot);
+//    coherencePlot.setPoints(coherencePointsToPlot);
+    coherencePlot.setPoints(coherenceWindow);
 
     //setup points of coherence point arrays
    /* coherencePointsToFreqPlot = new GPointsArray(coherenceIndexLim);
@@ -276,6 +280,9 @@ class W_CoherencePlot extends Widget {
         appendAndShift(coherencePoints[0], cTemp);
 
       updatePlotPoints();
+        timeIndexA++;
+        timeIndexB++;
+        coherenceIndex++;
     }
   }
 
@@ -286,31 +293,60 @@ class W_CoherencePlot extends Widget {
 
     
 
-    int a = dataBuffY_filtY_uV[channelA].length;
-    int b = dataBuffY_filtY_uV[channelB].length;
-    int c = coherencePoints[channels].length;
+    int a = dataBuffY_filtY_uV[channelA].length-1;
+    int b = dataBuffY_filtY_uV[channelB].length-1;
+    int c = coherencePoints[channels].length-1;
 
     float aTemp;
     float bTemp;
     float cTemp;
     float[] cFreqTemp = new float[nfft/2];
 
+    if(timeIndexA == nPoints){
+      timeIndexA = 0;
+    }
+    
+    if(timeIndexA == 0){
+      GPoint temp = new GPoint(time[0], 0);
+        timeWindowA.set(0, temp);      
+        timeWindowB.set(0, temp);   
+        coherenceWindow.set(0, temp);     
+    } else {    
+    for (int j = 0; j < timeIndexA; j++) {
 
-    for (int j = 0; j < nPoints; j++) {
-
-      aTemp = dataBuffY_filtY_uV[channelA][a+j-nPoints];
-      bTemp = dataBuffY_filtY_uV[channelB][b+j-nPoints];
-      cTemp = (float)coherencePoints[channels][c+j-nPoints];  
+      aTemp = dataBuffY_filtY_uV[channelA][a-j];
+      bTemp = dataBuffY_filtY_uV[channelB][b-j];
+      cTemp = (float)coherencePoints[channels][c-j];  
 
       GPoint tempPointA = new GPoint(time[j], aTemp);
       GPoint tempPointB = new GPoint(time[j], bTemp);
-      GPoint chTemp = new GPoint(10*time[j], cTemp);
+      GPoint chTemp = new GPoint(time[j], cTemp);
 
-      timePointsToPlot[0].set(j, tempPointA);
+/*      timePointsToPlot[0].set(j, tempPointA);
       timePointsToPlot[1].set(j, tempPointB);
       coherencePointsToPlot.set(j, chTemp);
-    }
+ */
+      timeWindowA.set(j, tempPointA);
+      timeWindowB.set(j, tempPointB);
+      coherenceWindow.set(j, chTemp);
+   }
 
+    for (int j = timeIndexA; j < nPoints; j++) {
+
+      GPoint tempPointA = new GPoint(time[j], 0);
+      GPoint tempPointB = new GPoint(time[j], 0);
+      GPoint chTemp = new GPoint(time[j], 0);
+
+/*      timePointsToPlot[0].set(j, tempPointA);
+      timePointsToPlot[1].set(j, tempPointB);
+      coherencePointsToPlot.set(j, chTemp);
+ */
+      timeWindowA.set(j, tempPointA);
+      timeWindowB.set(j, tempPointB);
+      coherenceWindow.set(j, chTemp);
+   }
+    }
+/*
     if(timeIndexA == nPoints){
       timeIndexA = 0;
     }
@@ -320,52 +356,55 @@ class W_CoherencePlot extends Widget {
         timeWindowA.set(0, temp);      
     } else{
       for(int i = 0; i < timeIndexA ; i++){
-        float auxX = timePointsToPlot[0].getX(c-1-i);
-        float auxY = timePointsToPlot[0].getY(c-1-i);
+        float auxY = timePointsToPlot[0].getY(nPoints-1-i);
         GPoint temp = new GPoint(time[i], auxY);
         timeWindowA.set(i, temp);
       }
-    }
+      for(int i = timeIndexA; i < nPoints ; i++){
+        GPoint temp = new GPoint(time[i], 0.0);
+        timeWindowA.set(i, temp);
+      }
+  }
     if(timeIndexB == nPoints){
       timeIndexB = 0;
     }
 
     if(timeIndexB == 0){
-        timeWindowB.set(0, 0);      
+     GPoint temp = new GPoint(time[0], 0);
+         timeWindowB.set(0, temp);      
     } else{
       for(int i = 0; i < timeIndexB ; i++){
-        float auxX = timePointsToPlot[1].getX(c-1-i);
-        float auxY = timePointsToPlot[1].getY(c-1-i);
+        float auxY = timePointsToPlot[1].getY(nPoints-1-i);
         GPoint temp = new GPoint(time[i], auxY);
         timeWindowB.set(i, temp);
       }
-    }
+      for(int i = timeIndexB; i < nPoints ; i++){
+        GPoint temp = new GPoint(time[i], 0.0);
+        timeWindowB.set(i, temp);
+      }
+  }
     if(coherenceIndex == nPoints){
       coherenceIndex = 0;
     }
 
     if(coherenceIndex == 0){
-        coherenceWindowA.set(0, 0);      
+      GPoint temp = new GPoint(time[0], 0);
+        coherenceWindow.set(0, temp);      
     } else{
       for(int i = 0; i < coherenceIndex ; i++){
-        float auxX = coherencePointsToPlot.getX(c-1-i);
-        float auxY = coherencePointsToPlot.getY(c-1-i);
+        float auxY = coherencePointsToPlot.getY(nPoints-1-i);
         GPoint temp = new GPoint(time[i], auxY);
+       coherenceWindow.set(i, temp);
+      }
+     for(int i = timeIndexB; i < nPoints ; i++){
+        GPoint temp = new GPoint(time[i], 0.0);
         coherenceWindow.set(i, temp);
       }
-    }
-
-    timeIndexA++;
-    timeIndexB++;
-    coherenceIndex++;
-
-
-
+    }*/
 //    cFreqTemp = coherence[channels].getCoherence();
 
 
    /* currentTime = System.currentTimeMillis();
-
     if ( 1000 < currentTime - prevTime) {
       for (int j = 0; j < coherenceIndexLim; j++) {
         if ( cFreqTemp.length <= j ) {
@@ -406,11 +445,13 @@ class W_CoherencePlot extends Widget {
       timeSeriesPlot[i].drawGridLines(0);
 
       timeSeriesPlot[i].setLineColor(lineColor[(colorSelected+i)%16]);
-      timeSeriesPlot[i].setPoints(timePointsToPlot[i]);
+      //timeSeriesPlot[i].setPoints(timePointsToPlot[i]);
       timeSeriesPlot[i].drawLines();
       timeSeriesPlot[i].endDraw();
     }
-
+      timeSeriesPlot[0].setPoints(timeWindowA);
+      timeSeriesPlot[1].setPoints(timeWindowB);
+      
 
     switch(plotDom) {
       case("time"):
@@ -426,7 +467,8 @@ class W_CoherencePlot extends Widget {
       coherencePlot.drawGridLines(2);
 
       coherencePlot.setLineColor(lineColor[colorSelected]);
-      coherencePlot.setPoints(coherencePointsToPlot);
+//      coherencePlot.setPoints(coherencePointsToPlot);
+      coherencePlot.setPoints(coherenceWindow);
       coherencePlot.drawLines();
       coherencePlot.endDraw();
       break;
@@ -460,7 +502,8 @@ class W_CoherencePlot extends Widget {
       coherencePlot.drawGridLines(2);
 
       coherencePlot.setLineColor(lineColor[colorSelected]);
-      coherencePlot.setPoints(coherencePointsToPlot);
+//      coherencePlot.setPoints(coherencePointsToPlot);
+      coherencePlot.setPoints(coherenceWindow);
       coherencePlot.drawLines();
       coherencePlot.endDraw();
       break;
@@ -522,9 +565,9 @@ class W_CoherencePlot extends Widget {
   void adjustXAxis(int n) {
 
     xLim = xLimOptions[n];
-    timeSeriesPlot[0].setXLim(-xLim, 0);
-    timeSeriesPlot[1].setXLim(-xLim, 0);
-    coherencePlot.setXLim(-xLim, 0); //update the xLim of the coherencePlot
+    timeSeriesPlot[0].setXLim(0, xLim);
+    timeSeriesPlot[1].setXLim(0, xLim);
+    coherencePlot.setXLim(0, xLim); //update the xLim of the coherencePlot
 
     nPoints =  xLim * fs;
     timeBetweenPoints = (float)xLim / (float)nPoints;
@@ -532,9 +575,13 @@ class W_CoherencePlot extends Widget {
     time = new float[nPoints];
 
     for (int i = 0; i < nPoints; i++) { 
-      time[i] = -(float)xLim + (float)i*timeBetweenPoints;
+      time[i] = (float)(i-(dataBuffY_filtY_uV[0].length-nPoints))*timeBetweenPoints;
     }
 
+    timeWindowA = new GPointsArray(nPoints);
+    timeWindowB = new GPointsArray(nPoints);
+
+    coherenceWindow = new GPointsArray(nPoints);
 
     timePointsToPlot[0] = new GPointsArray(nPoints);
     timePointsToPlot[1] = new GPointsArray(nPoints);
